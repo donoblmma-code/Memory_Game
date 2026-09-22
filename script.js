@@ -1,0 +1,736 @@
+/**
+ * Antigravity Memory Card Game
+ * Modern, responsive browser-based memory card matching game.
+ */
+
+// ==========================================
+// 1. Icon Definitions (Crisp SVG Symbols)
+// ==========================================
+const SYMBOLS = [
+  {
+    id: 'rocket',
+    name: 'Rocket',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+    </svg>`
+  },
+  {
+    id: 'diamond',
+    name: 'Diamond',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 3h12l4 6-10 12L2 9l4-6z"/>
+      <path d="M11 3 8 9l4 12 4-12-3-6"/>
+      <path d="M2 9h20"/>
+    </svg>`
+  },
+  {
+    id: 'lightning',
+    name: 'Lightning',
+    svg: `<svg viewBox="0 0 24 24" fill="#facc15" stroke="#eab308" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>`
+  },
+  {
+    id: 'planet',
+    name: 'Planet',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="7"/>
+      <path d="M2.5 15.5C5.5 18 10 19 14.5 18s8.5-4 7-6.5-6.5-2.5-11-1.5-8.5 4-8 5.5z"/>
+    </svg>`
+  },
+  {
+    id: 'clover',
+    name: 'Clover',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 12c-2-2-4-1-5 0s0 4 2 4c-2 2-1 4 0 5s4 0 4-2c0 2 2 3 4 2s2-3 0-5c2 0 3-2 2-4s-3-2-5 0"/>
+      <path d="M12 14v8"/>
+    </svg>`
+  },
+  {
+    id: 'fire',
+    name: 'Fire',
+    svg: `<svg viewBox="0 0 24 24" fill="#fb923c" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+    </svg>`
+  },
+  {
+    id: 'star',
+    name: 'Star',
+    svg: `<svg viewBox="0 0 24 24" fill="#fbbf24" stroke="#d97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>`
+  },
+  {
+    id: 'crystal',
+    name: 'Crystal',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#e879f9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 20 8.5 17 22 7 22 4 8.5 12 2"/>
+      <line x1="12" y1="2" x2="12" y2="22"/>
+      <polyline points="4 8.5 12 14 20 8.5"/>
+    </svg>`
+  },
+  {
+    id: 'ufo',
+    name: 'UFO',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4a5 5 0 0 1 5 4H7a5 5 0 0 1 5-4z"/>
+      <ellipse cx="12" cy="12" rx="10" ry="4"/>
+      <path d="M7 15l-3 5M12 16v5M17 15l3 5"/>
+    </svg>`
+  },
+  {
+    id: 'crown',
+    name: 'Crown',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"/>
+    </svg>`
+  },
+  {
+    id: 'target',
+    name: 'Target',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <circle cx="12" cy="12" r="6"/>
+      <circle cx="12" cy="12" r="2" fill="#f43f5e"/>
+    </svg>`
+  },
+  {
+    id: 'rainbow',
+    name: 'Rainbow',
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 17a10 10 0 0 0-20 0"/>
+      <path d="M6 17a6 6 0 0 1 12 0"/>
+      <path d="M10 17a2 2 0 0 1 4 0"/>
+    </svg>`
+  }
+];
+
+// SVG Card Back Pattern
+const CARD_BACK_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" class="card-back-pattern">
+  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+</svg>`;
+
+// ==========================================
+// 2. Sound Synthesizer (Web Audio API)
+// ==========================================
+class SoundController {
+  constructor() {
+    this.ctx = null;
+    this.enabled = localStorage.getItem('memory_game_sound') !== 'false';
+  }
+
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
+      }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  toggle() {
+    this.enabled = !this.enabled;
+    localStorage.setItem('memory_game_sound', this.enabled);
+    return this.enabled;
+  }
+
+  playFlip() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(560, this.ctx.currentTime + 0.08);
+
+      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.08);
+    } catch (e) {
+      console.warn('Audio error:', e);
+    }
+  }
+
+  playMatch() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 major triad
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.07);
+
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.07 + 0.28);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + idx * 0.07);
+        osc.stop(this.ctx.currentTime + idx * 0.07 + 0.28);
+      });
+    } catch (e) {
+      console.warn('Audio error:', e);
+    }
+  }
+
+  playMismatch() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(130, this.ctx.currentTime + 0.16);
+
+      gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.16);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.16);
+    } catch (e) {
+      console.warn('Audio error:', e);
+    }
+  }
+
+  playWin() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const fanfare = [
+        { note: 523.25, time: 0, dur: 0.12 },    // C5
+        { note: 659.25, time: 0.12, dur: 0.12 }, // E5
+        { note: 783.99, time: 0.24, dur: 0.14 }, // G5
+        { note: 1046.50, time: 0.38, dur: 0.45 } // C6
+      ];
+
+      fanfare.forEach(item => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(item.note, this.ctx.currentTime + item.time);
+
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime + item.time);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + item.time + item.dur);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + item.time);
+        osc.stop(this.ctx.currentTime + item.time + item.dur);
+      });
+    } catch (e) {
+      console.warn('Audio error:', e);
+    }
+  }
+}
+
+// ==========================================
+// 3. Lightweight Canvas Confetti
+// ==========================================
+class ConfettiManager {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.particles = [];
+    this.animationFrame = null;
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  }
+
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  fire() {
+    this.stop();
+    this.resize();
+    this.particles = [];
+    const colors = ['#6366f1', '#38bdf8', '#4ade80', '#fbbf24', '#f43f5e', '#c084fc'];
+    const count = 90;
+
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        x: this.canvas.width * (0.2 + Math.random() * 0.6),
+        y: this.canvas.height * 0.3 + (Math.random() * 50 - 25),
+        vx: (Math.random() - 0.5) * 12,
+        vy: Math.random() * -10 - 4,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
+        gravity: 0.28,
+        opacity: 1
+      });
+    }
+
+    const render = () => {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      let aliveCount = 0;
+
+      for (let p of this.particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.vx *= 0.98;
+        p.rotation += p.rotationSpeed;
+        if (p.y > this.canvas.height * 0.5) {
+          p.opacity -= 0.012;
+        }
+
+        if (p.opacity > 0 && p.y < this.canvas.height + 20) {
+          aliveCount++;
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rotation * Math.PI) / 180);
+          this.ctx.globalAlpha = Math.max(0, p.opacity);
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          this.ctx.restore();
+        }
+      }
+
+      if (aliveCount > 0) {
+        this.animationFrame = requestAnimationFrame(render);
+      } else {
+        this.stop();
+      }
+    };
+
+    this.animationFrame = requestAnimationFrame(render);
+  }
+
+  stop() {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
+    }
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.particles = [];
+  }
+}
+
+// ==========================================
+// 4. Game Configuration & State
+// ==========================================
+const DIFFICULTY_CONFIG = {
+  easy: { pairs: 6, cols: 4, name: 'Easy' },
+  medium: { pairs: 8, cols: 4, name: 'Medium' },
+  hard: { pairs: 12, cols: 6, name: 'Hard' }
+};
+
+const gameState = {
+  difficulty: 'medium',
+  cards: [],
+  flippedCards: [],
+  matchedPairs: 0,
+  totalPairs: 8,
+  moves: 0,
+  timerSeconds: 0,
+  timerInterval: null,
+  isTimerRunning: false,
+  isLocked: false
+};
+
+// ==========================================
+// 5. DOM Elements
+// ==========================================
+const gridElement = document.getElementById('gameGrid');
+const timerDisplay = document.getElementById('timerDisplay');
+const movesDisplay = document.getElementById('movesDisplay');
+const matchesDisplay = document.getElementById('matchesDisplay');
+const bestScoreDisplay = document.getElementById('bestScoreDisplay');
+const restartBtn = document.getElementById('restartBtn');
+const soundToggleBtn = document.getElementById('soundToggleBtn');
+const diffButtons = document.querySelectorAll('.diff-btn');
+
+// Modal Elements
+const winModal = document.getElementById('winModal');
+const modalTime = document.getElementById('modalTime');
+const modalMoves = document.getElementById('modalMoves');
+const modalAccuracy = document.getElementById('modalAccuracy');
+const modalBest = document.getElementById('modalBest');
+const modalRecordBadge = document.getElementById('modalRecordBadge');
+const playAgainBtn = document.getElementById('playAgainBtn');
+const nextDiffBtn = document.getElementById('nextDiffBtn');
+const confettiCanvas = document.getElementById('confettiCanvas');
+
+// Controllers
+const sound = new SoundController();
+const confetti = new ConfettiManager(confettiCanvas);
+
+// ==========================================
+// 6. Local Storage Scores Management
+// ==========================================
+function getStoredScores() {
+  const defaultScores = {
+    easy: { time: null, moves: null },
+    medium: { time: null, moves: null },
+    hard: { time: null, moves: null }
+  };
+  try {
+    const raw = localStorage.getItem('antigravity_memory_scores');
+    if (!raw) return defaultScores;
+    const parsed = JSON.parse(raw);
+    return { ...defaultScores, ...parsed };
+  } catch (e) {
+    return defaultScores;
+  }
+}
+
+function saveScore(difficulty, timeSeconds, moves) {
+  const scores = getStoredScores();
+  const currentDiffScore = scores[difficulty] || { time: null, moves: null };
+  let isNewRecord = false;
+
+  if (currentDiffScore.time === null || timeSeconds < currentDiffScore.time) {
+    currentDiffScore.time = timeSeconds;
+    isNewRecord = true;
+  }
+  if (currentDiffScore.moves === null || moves < currentDiffScore.moves) {
+    currentDiffScore.moves = moves;
+    isNewRecord = true;
+  }
+
+  scores[difficulty] = currentDiffScore;
+  localStorage.setItem('antigravity_memory_scores', JSON.stringify(scores));
+  return { isNewRecord, best: currentDiffScore };
+}
+
+function updateBestScoreUI() {
+  const scores = getStoredScores();
+  const diffScore = scores[gameState.difficulty];
+  if (diffScore && diffScore.time !== null) {
+    bestScoreDisplay.textContent = `${formatTime(diffScore.time)} (${diffScore.moves}m)`;
+  } else {
+    bestScoreDisplay.textContent = '--:--';
+  }
+}
+
+// ==========================================
+// 7. Timer & Formatting Utilities
+// ==========================================
+function formatTime(totalSeconds) {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+function startTimer() {
+  if (gameState.isTimerRunning) return;
+  gameState.isTimerRunning = true;
+  gameState.timerInterval = setInterval(() => {
+    gameState.timerSeconds++;
+    timerDisplay.textContent = formatTime(gameState.timerSeconds);
+  }, 1000);
+}
+
+function stopTimer() {
+  if (gameState.timerInterval) {
+    clearInterval(gameState.timerInterval);
+    gameState.timerInterval = null;
+  }
+  gameState.isTimerRunning = false;
+}
+
+function resetTimer() {
+  stopTimer();
+  gameState.timerSeconds = 0;
+  timerDisplay.textContent = '00:00';
+}
+
+// ==========================================
+// 8. Deck Building & Shuffling
+// ==========================================
+function shuffle(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function createDeck(numPairs) {
+  const selectedSymbols = SYMBOLS.slice(0, numPairs);
+  const deck = [];
+  selectedSymbols.forEach(symbol => {
+    // Two cards per pair
+    deck.push({ ...symbol, uniqueId: `${symbol.id}-1` });
+    deck.push({ ...symbol, uniqueId: `${symbol.id}-2` });
+  });
+  return shuffle(deck);
+}
+
+// ==========================================
+// 9. Card Interaction & Matching Logic
+// ==========================================
+function handleCardClick(cardElement, cardData) {
+  // Prevent clicks if locked, already flipped, or matched
+  if (gameState.isLocked) return;
+  if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
+
+  // Start timer on player's first card click
+  if (!gameState.isTimerRunning && gameState.moves === 0 && gameState.flippedCards.length === 0) {
+    startTimer();
+  }
+
+  // Flip the card
+  cardElement.classList.add('flipped');
+  sound.playFlip();
+  gameState.flippedCards.push({ element: cardElement, data: cardData });
+
+  // When two cards are flipped, perform match check
+  if (gameState.flippedCards.length === 2) {
+    gameState.isLocked = true;
+    gameState.moves++;
+    movesDisplay.textContent = gameState.moves;
+
+    const [first, second] = gameState.flippedCards;
+    const isMatch = first.data.id === second.data.id;
+
+    if (isMatch) {
+      // Match found!
+      setTimeout(() => {
+        first.element.classList.add('matched');
+        second.element.classList.add('matched');
+        sound.playMatch();
+
+        gameState.matchedPairs++;
+        matchesDisplay.textContent = `${gameState.matchedPairs} / ${gameState.totalPairs}`;
+        gameState.flippedCards = [];
+        gameState.isLocked = false;
+
+        // Check if all pairs found
+        if (gameState.matchedPairs === gameState.totalPairs) {
+          handleVictory();
+        }
+      }, 350);
+    } else {
+      // Mismatch
+      setTimeout(() => {
+        first.element.classList.add('mismatch');
+        second.element.classList.add('mismatch');
+        sound.playMismatch();
+
+        setTimeout(() => {
+          first.element.classList.remove('flipped', 'mismatch');
+          second.element.classList.remove('flipped', 'mismatch');
+          gameState.flippedCards = [];
+          gameState.isLocked = false;
+        }, 650);
+      }, 400);
+    }
+  }
+}
+
+// ==========================================
+// 10. Win Condition & Modal Handling
+// ==========================================
+function handleVictory() {
+  stopTimer();
+  sound.playWin();
+  confetti.fire();
+
+  const finalTime = gameState.timerSeconds;
+  const finalMoves = gameState.moves;
+  const accuracy = Math.round((gameState.totalPairs / finalMoves) * 100);
+
+  // Save score & check record
+  const { isNewRecord, best } = saveScore(gameState.difficulty, finalTime, finalMoves);
+  updateBestScoreUI();
+
+  // Populate Modal
+  modalTime.textContent = formatTime(finalTime);
+  modalMoves.textContent = finalMoves;
+  modalAccuracy.textContent = `${accuracy}%`;
+  modalBest.textContent = `${formatTime(best.time)} (${best.moves}m)`;
+
+  if (isNewRecord) {
+    modalRecordBadge.classList.remove('hidden');
+  } else {
+    modalRecordBadge.classList.add('hidden');
+  }
+
+  // Next difficulty button visibility
+  if (gameState.difficulty === 'easy') {
+    nextDiffBtn.textContent = 'Next: Medium';
+    nextDiffBtn.classList.remove('hidden');
+  } else if (gameState.difficulty === 'medium') {
+    nextDiffBtn.textContent = 'Next: Hard';
+    nextDiffBtn.classList.remove('hidden');
+  } else {
+    nextDiffBtn.classList.add('hidden');
+  }
+
+  setTimeout(() => {
+    winModal.classList.add('active');
+  }, 500);
+}
+
+function closeWinModal() {
+  winModal.classList.remove('active');
+  confetti.stop();
+}
+
+// ==========================================
+// 11. Game Initialization & Reset
+// ==========================================
+function initGame(difficulty = gameState.difficulty) {
+  closeWinModal();
+  resetTimer();
+
+  gameState.difficulty = difficulty;
+  const config = DIFFICULTY_CONFIG[difficulty];
+  gameState.totalPairs = config.pairs;
+  gameState.matchedPairs = 0;
+  gameState.moves = 0;
+  gameState.flippedCards = [];
+  gameState.isLocked = false;
+
+  // Update UI Stats
+  movesDisplay.textContent = '0';
+  matchesDisplay.textContent = `0 / ${gameState.totalPairs}`;
+  updateBestScoreUI();
+
+  // Update Difficulty Buttons
+  diffButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.difficulty === difficulty);
+  });
+
+  // Set Grid Class for columns
+  gridElement.className = `game-grid ${difficulty}`;
+  gridElement.innerHTML = '';
+
+  // Generate Deck
+  const deck = createDeck(config.pairs);
+
+  // Render Cards
+  deck.forEach(cardData => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Hidden memory card`);
+
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face card-face-back">
+          ${CARD_BACK_SVG}
+        </div>
+        <div class="card-face card-face-front">
+          <div class="card-icon">${cardData.svg}</div>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => handleCardClick(card, cardData));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleCardClick(card, cardData);
+      }
+    });
+
+    gridElement.appendChild(card);
+  });
+}
+
+// ==========================================
+// 12. Event Listeners & UI Binding
+// ==========================================
+// Difficulty Switchers
+diffButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const diff = btn.dataset.difficulty;
+    if (diff && DIFFICULTY_CONFIG[diff]) {
+      initGame(diff);
+    }
+  });
+});
+
+// Restart Button
+restartBtn.addEventListener('click', () => {
+  initGame();
+});
+
+// Sound Toggle Button
+function updateSoundButtonUI() {
+  const iconOn = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+  const iconOff = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
+  soundToggleBtn.innerHTML = sound.enabled ? iconOn : iconOff;
+  soundToggleBtn.setAttribute('aria-label', sound.enabled ? 'Mute Sound' : 'Unmute Sound');
+  soundToggleBtn.title = sound.enabled ? 'Mute Sound' : 'Unmute Sound';
+}
+
+soundToggleBtn.addEventListener('click', () => {
+  sound.toggle();
+  updateSoundButtonUI();
+});
+
+// Modal Actions
+playAgainBtn.addEventListener('click', () => {
+  initGame();
+});
+
+nextDiffBtn.addEventListener('click', () => {
+  if (gameState.difficulty === 'easy') {
+    initGame('medium');
+  } else if (gameState.difficulty === 'medium') {
+    initGame('hard');
+  } else {
+    initGame('easy');
+  }
+});
+
+// Close modal on background click
+winModal.addEventListener('click', (e) => {
+  if (e.target === winModal) {
+    closeWinModal();
+  }
+});
+
+// Keyboard Escape to close modal
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && winModal.classList.contains('active')) {
+    closeWinModal();
+  }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  updateSoundButtonUI();
+  initGame('medium');
+});
+

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Game - Antigravity</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background Canvas for Confetti -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="game-container">
+    <!-- Header -->
+    <header class="game-header">
+      <h1 class="game-title">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <path d="M16 8h.01"/>
+          <path d="M8 16h.01"/>
+          <path d="M12 12h.01"/>
+        </svg>
+        Memory Game
+      </h1>
+
+      <div class="game-header-actions">
+        <!-- Difficulty Selector -->
+        <nav class="difficulty-selector" aria-label="Select Game Difficulty">
+          <button type="button" class="diff-btn" data-difficulty="easy">Easy</button>
+          <button type="button" class="diff-btn active" data-difficulty="medium">Medium</button>
+          <button type="button" class="diff-btn" data-difficulty="hard">Hard</button>
+        </nav>
+
+        <!-- Sound Toggle Button -->
+        <button type="button" id="soundToggleBtn" class="icon-btn" aria-label="Toggle Sound" title="Toggle Sound">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar" aria-label="Game Statistics">
+      <div class="stat-item">
+        <span class="stat-label">Time</span>
+        <span class="stat-value" id="timerDisplay">00:00</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Moves</span>
+        <span class="stat-value" id="movesDisplay">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Matches</span>
+        <span class="stat-value" id="matchesDisplay">0 / 8</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Best</span>
+        <span class="stat-value" id="bestScoreDisplay">--:--</span>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <button type="button" id="restartBtn" class="btn-primary" title="Restart Game">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+        Restart Game
+      </button>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="grid-wrapper">
+      <section id="gameGrid" class="game-grid medium" aria-label="Memory Card Grid">
+        <!-- Cards generated dynamically by script.js -->
+      </section>
+    </div>
+  </main>
+
+  <!-- Victory Modal -->
+  <div id="winModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-trophy" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 0 0 3.61-4.96C19.08 10.63 21 8.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+        </svg>
+      </div>
+
+      <h2 id="modalTitle" class="modal-title">You Win!</h2>
+      <p class="modal-subtitle">Outstanding memory skills!</p>
+      
+      <div id="modalRecordBadge" class="modal-record-badge hidden">
+        ★ New Best Record!
+      </div>
+
+      <div class="modal-stats-grid">
+        <div class="modal-stat-box">
+          <span class="stat-label">Completion Time</span>
+          <span class="stat-value" id="modalTime">00:00</span>
+        </div>
+        <div class="modal-stat-box">
+          <span class="stat-label">Total Moves</span>
+          <span class="stat-value" id="modalMoves">0</span>
+        </div>
+        <div class="modal-stat-box">
+          <span class="stat-label">Accuracy</span>
+          <span class="stat-value" id="modalAccuracy">100%</span>
+        </div>
+        <div class="modal-stat-box">
+          <span class="stat-label">Difficulty Best</span>
+          <span class="stat-value" id="modalBest">--:--</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="playAgainBtn" class="modal-btn secondary">Play Again</button>
+        <button type="button" id="nextDiffBtn" class="modal-btn primary">Next Difficulty</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
